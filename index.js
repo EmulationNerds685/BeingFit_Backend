@@ -30,7 +30,7 @@ app.use(
     }),
     cookie: {
       httpOnly: true,
-      secure: false, // true rakho agar HTTPS use kar rahe ho
+      secure: true, // true rakho agar HTTPS use kar rahe ho
       maxAge: 1000 * 60 * 60 * 24, // 1 din
     },
   })
