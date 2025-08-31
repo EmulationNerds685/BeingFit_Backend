@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // ya jo bhi frontend chal raha hai
+    origin: "http://localhost:5173" || "https://oxygengymequipments.netlify.app/", // ya jo bhi frontend chal raha hai
     credentials: true,
   })
 );
