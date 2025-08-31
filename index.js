@@ -1,22 +1,27 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import cors from 'cors'
+import cors from 'cors';
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import productRoutes from "./routes/ProductRoute.js";
 import userRoutes from "./routes/UserRoute.js";
+
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// ✅ REQUIRED FOR DEPLOYMENT: Trust the proxy to handle secure cookies
+app.set('trust proxy', 1);
+
 app.use(
   cors({
-    origin: "http://localhost:5173" || "https://oxygengymequipments.netlify.app/", // ya jo bhi frontend chal raha hai
+    // ✅ FIX 1: Use an array for multiple origins
+    origin: ["http://localhost:5173", "https://oxygengymequipments.netlify.app"],
     credentials: true,
   })
 );
-// Middleware
+
 app.use(express.json());
 
 app.use(
@@ -29,9 +34,11 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      httpOnly: false,
-      secure: true, // true rakho agar HTTPS use kar rahe ho
-      maxAge: 1000 * 60 * 60 * 24, // 1 din
+      // ✅ FIX 2 & 4: Set sameSite and make httpOnly true for security
+      sameSite: 'none', // Required for cross-site requests
+      secure: true,     // Required when sameSite is 'none'
+      httpOnly: true,   // Prevents client-side JS from accessing the cookie
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     },
   })
 );
@@ -39,12 +46,10 @@ app.use(
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);
 
-// MongoDB connect
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ DB Error:", err));
 
-// Start Server
 app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  console.log(`🚀 Server running on port ${port}`);
 });
