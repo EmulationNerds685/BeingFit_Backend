@@ -6,7 +6,9 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import productRoutes from "./routes/ProductRoute.js";
 import userRoutes from "./routes/UserRoute.js";
-
+import cartRoutes from "./routes/CartRoute.js";
+import orderRoutes from "./routes/OrderRoute.js";
+import checkoutRoutes from "./routes/CheckoutRoute.js";
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
@@ -45,7 +47,9 @@ app.use(
 
 app.use("/products", productRoutes);
 app.use("/users", userRoutes);
-
+app.use("/cart", cartRoutes);
+app.use("/orders", orderRoutes);
+app.use("/checkout", checkoutRoutes);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ DB Error:", err));
