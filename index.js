@@ -53,7 +53,9 @@ app.use("/checkout", checkoutRoutes);
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(err => console.error("❌ DB Error:", err));
-
+app.get('/',(req,res)=>{
+  res.status(200).json({ success: true, message: "Server is up!" });
+})
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
 });
