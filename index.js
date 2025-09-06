@@ -19,7 +19,7 @@ app.set('trust proxy', 1);
 app.use(
   cors({
     // ✅ FIX 1: Use an array for multiple origins
-    origin: ["http://localhost:5173", "https://oxygengymequipments.netlify.app"],
+    origin: ["http://localhost:5173", "https://oxygengymequipments.netlify.app","https://beingfitadmin.netlify.app"],
     credentials: true,
   })
 );
