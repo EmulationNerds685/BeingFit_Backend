@@ -13,12 +13,12 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// ✅ REQUIRED FOR DEPLOYMENT: Trust the proxy to handle secure cookies
+
 app.set('trust proxy', 1);
 
 app.use(
   cors({
-    // ✅ FIX 1: Use an array for multiple origins
+    
     origin: ["http://localhost:5173", "https://oxygengymequipments.netlify.app","https://beingfitadmin.netlify.app"],
     credentials: true,
   })
@@ -36,11 +36,10 @@ app.use(
       collectionName: "sessions",
     }),
     cookie: {
-      // ✅ FIX 2 & 4: Set sameSite and make httpOnly true for security
-      sameSite: 'none', // Required for cross-site requests
-      secure: true,     // Required when sameSite is 'none'
-      httpOnly: true,   // Prevents client-side JS from accessing the cookie
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax', 
+      secure: process.env.NODE_ENV === "production",    
+      httpOnly: true,   
+      maxAge: 1000 * 60 * 60 * 24, 
     },
   })
 );
