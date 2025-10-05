@@ -1,52 +1,20 @@
 import express from "express";
 import upload from "../config/multer.js";
-import Product from "../models/Product.js";
+import { protect } from "../middleware/authMiddleware.js";
+import {
+  createProduct,
+  getAllProducts,
+  getProductById,
+} from "../controllers/productController.js";
 
 const router = express.Router();
 
-router.post("/", upload.array("images", 5), async (req, res) => {
-  try {
-    const { name, description, price, category, stock } = req.body;
+router
+  .route("/")
+  .get(getAllProducts)
 
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "At least one image is required" });
-    }
+  .post(protect, upload.array("images", 5), createProduct);
 
-    const product = new Product({
-      name,
-      description,
-      price:Number(price),
-      category,
-      stock:Number(stock),
-      images: req.files.map(file => file.path), 
-    });
-
-    await product.save();
-    res.status(201).json(product);
-} catch (err) {
-  console.error("Upload Error:", err);
-  res.status(500).send(err.message); // 👈 ab Postman me plain text error dikh jaayega
-}
-
-});
-
-router.get("/", async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching products", error });
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
-    res.json(product);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
+router.route("/:id").get(getProductById);
 
 export default router;
