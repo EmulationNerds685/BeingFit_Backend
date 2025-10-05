@@ -4,7 +4,7 @@ import cors from "cors";
 import session from "express-session";
 import MongoStore from "connect-mongo";
 import connectDB from "./config/db.js";
-import productRoutes from "./routes/productRoute.js";
+import productRoutes from "./routes/ProductRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import cartRoutes from "./routes/cartRoute.js";
 import orderRoutes from "./routes/orderRoute.js";

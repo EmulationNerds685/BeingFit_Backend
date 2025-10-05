@@ -11,9 +11,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(getAllProducts)
-
-  .post(protect, upload.array("images", 5), createProduct);
+  .get(getAllProducts).post(protect, upload.array("images", 5), createProduct);
 
 router.route("/:id").get(getProductById);
 
