@@ -12,10 +12,20 @@ const razorpay = new Razorpay({
 // @access  Private
 export const createRazorpayOrder = async (req, res) => {
   try {
-    const { amount, userId, cartItems } = req.body;
+    // SECURITY FIX: Get userId from the session (from 'protect' middleware)
+    const userId = req.user._id;
+    const { amount, cartItems } = req.body;
+
+    if (!cartItems || cartItems.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+    
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ success: false, message: "Invalid amount" });
+    }
 
     const options = {
-      amount: amount * 100, // Amount in paisa
+      amount: Math.round(amount * 100), // Amount in paisa, ensure it's an integer
       currency: "INR",
       receipt: `receipt_order_${Date.now()}`,
     };
@@ -24,7 +34,7 @@ export const createRazorpayOrder = async (req, res) => {
 
     // Create an order in our database
     const newOrder = new Order({
-      userId,
+      userId, // Use the secure userId from the session
       items: cartItems.map((item) => ({
         productId: item.productId._id,
         quantity: item.quantity,
@@ -49,7 +59,12 @@ export const createRazorpayOrder = async (req, res) => {
 // @access  Private
 export const verifyPayment = async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({ success: false, message: "Payment data missing" });
+    }
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
 
@@ -62,7 +77,7 @@ export const verifyPayment = async (req, res) => {
 
     if (isAuthentic) {
       // Find the order and update payment status
-      await Order.findOneAndUpdate(
+      const order = await Order.findOneAndUpdate(
         { razorpayOrderId: razorpay_order_id },
         {
           paymentStatus: "paid",
@@ -70,6 +85,16 @@ export const verifyPayment = async (req, res) => {
           razorpaySignature: razorpay_signature,
         }
       );
+
+      if (!order) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
+
+      // Here you would also clear the user's cart
+      // We need to import the Cart model
+      // import Cart from "../models/Cart.js";
+      // await Cart.findOneAndDelete({ userId: order.userId });
+
       res.json({ success: true, message: "Payment verified successfully" });
     } else {
       res.status(400).json({ success: false, message: "Payment verification failed" });

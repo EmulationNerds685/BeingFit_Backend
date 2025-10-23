@@ -1,9 +1,6 @@
 import Order from "../models/Order.js";
-
-// @desc    Get all orders (for admin)
-// @route   GET /orders
-// @access  Private/Admin
 export const getAllOrders = async (req, res) => {
+
   try {
     const orders = await Order.find()
       .populate("userId", "name email")
@@ -15,10 +12,6 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Create new order (Used by checkout)
-// @route   POST /orders/create
-// @access  Private
 export const createOrder = async (req, res) => {
   try {
     const { userId, items, totalAmount } = req.body;
@@ -27,7 +20,7 @@ export const createOrder = async (req, res) => {
       userId,
       items,
       totalAmount,
-      paymentStatus: "pending", // Default status
+      paymentStatus: "pending",
     });
 
     await newOrder.save();
@@ -36,37 +29,34 @@ export const createOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Get all orders of a specific user
-// @route   GET /orders/:userId
-// @access  Private
 export const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ userId: req.params.userId })
+    const userId = req.user._id;
+
+    const orders = await Order.find({ userId: userId })
       .populate("items.productId", "name price images")
       .sort({ createdAt: -1 });
-
     res.json({ success: true, orders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// @desc    Update order status (for admin)
-// @route   PUT /orders/update/:orderId
-// @access  Private/Admin
 export const updateOrderStatus = async (req, res) => {
   try {
-    const { orderStatus } = req.body; // e.g., "shipped", "delivered"
+    const { orderStatus } = req.body;
+    const validStatuses = ["processing", "shipped", "delivered", "cancelled"];
+    if (!validStatuses.includes(orderStatus)) {
+        return res.status(400).json({ success: false, message: "Invalid order status" });
+    }
 
     const order = await Order.findByIdAndUpdate(
-      req.params.orderId,
+      req.params.id,
       { orderStatus },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res.status(44).json({ success: false, message: "Order not found" });
     }
 
     res.json({ success: true, order });

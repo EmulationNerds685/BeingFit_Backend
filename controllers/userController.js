@@ -1,9 +1,5 @@
-// controllers/userController.js
 import bcrypt from "bcrypt";
 import User from "../models/Users.js";
-
-// @desc    Register a new user
-// @route   POST /users/signup
 export const signupUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -20,14 +16,11 @@ export const signupUser = async (req, res) => {
     res.status(500).json({ message: "Signup failed", error: err.message });
   }
 };
-
-// @desc    Authenticate user & get session
-// @route   POST /users/login
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ message: "No email Found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
@@ -38,9 +31,6 @@ export const loginUser = async (req, res) => {
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
-
-// @desc    Logout user & clear session
-// @route   POST /users/logout
 export const logoutUser = (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ message: "Logout failed" });
@@ -48,9 +38,6 @@ export const logoutUser = (req, res) => {
     res.json({ message: "Logged out successfully" });
   });
 };
-
-// @desc    Get user profile from session
-// @route   GET /users/me
 export const checkUserSession = async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Not logged in" });
